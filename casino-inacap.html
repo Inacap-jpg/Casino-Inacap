@@ -273,6 +273,19 @@
     font-family:'Work Sans'; font-size:14.5px; background:#fff;
   }
   .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .pay-methods{display:flex; flex-direction:column; gap:10px;}
+  .pay-method{
+    display:flex; align-items:center; gap:12px;
+    border:2px solid var(--ink); border-radius:12px; padding:12px 14px;
+    cursor:pointer; background:#fff; transition:background .12s, transform .12s;
+  }
+  .pay-method:hover{transform:translateY(-1px);}
+  .pay-method input{width:auto; margin:0;}
+  .pay-method.active{background:var(--mustard);}
+  .pay-method .pm-icon{font-size:22px; flex-shrink:0;}
+  .pay-method .pm-text{display:flex; flex-direction:column; gap:1px;}
+  .pay-method .pm-text strong{font-size:14px;}
+  .pay-method .pm-text small{font-size:11.5px; color:#5c5c63;}
   .hint{font-size:12px; color:#8a8a90; margin-top:6px;}
   .summary-box{
     background:#F3EEE2; border-radius:14px; padding:14px 16px; margin-bottom:16px;
@@ -522,25 +535,75 @@
         <div class="step-title">PASO 2 DE 3</div>
         <h4 class="step-heading">Pago simulado</h4>
         <div class="summary-box" id="paySummary"></div>
+
         <div class="field">
-          <label for="cardName">Nombre en la tarjeta</label>
-          <input type="text" id="cardName" placeholder="Como aparece en tu tarjeta">
+          <label>Medio de pago</label>
+          <div class="pay-methods">
+            <label class="pay-method active" data-method="credito">
+              <input type="radio" name="payMethod" value="credito" checked>
+              <span class="pm-icon">💳</span>
+              <span class="pm-text">
+                <strong>Tarjeta de Crédito</strong>
+                <small>Visa / Mastercard</small>
+              </span>
+            </label>
+            <label class="pay-method" data-method="debito">
+              <input type="radio" name="payMethod" value="debito">
+              <span class="pm-icon">💳</span>
+              <span class="pm-text">
+                <strong>Tarjeta de Débito</strong>
+                <small>Cuenta RUT / otros bancos</small>
+              </span>
+            </label>
+            <label class="pay-method" data-method="edenred">
+              <input type="radio" name="payMethod" value="edenred">
+              <span class="pm-icon">🍽️</span>
+              <span class="pm-text">
+                <strong>Pago Digital Edenred</strong>
+                <small>Tarjeta de beneficios de alimentación</small>
+              </span>
+            </label>
+          </div>
         </div>
-        <div class="field">
-          <label for="cardNumber">Número de tarjeta</label>
-          <input type="text" id="cardNumber" maxlength="19" placeholder="4051 8800 0000 0000">
-        </div>
-        <div class="field-row">
+
+        <div id="cardFields">
           <div class="field">
-            <label for="cardExp">Vencimiento</label>
-            <input type="text" id="cardExp" maxlength="5" placeholder="MM/AA">
+            <label for="cardName">Nombre en la tarjeta</label>
+            <input type="text" id="cardName" placeholder="Como aparece en tu tarjeta">
           </div>
           <div class="field">
-            <label for="cardCvv">CVV</label>
-            <input type="text" id="cardCvv" maxlength="3" placeholder="123">
+            <label for="cardNumber">Número de tarjeta</label>
+            <input type="text" id="cardNumber" maxlength="19" placeholder="4051 8800 0000 0000">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="cardExp">Vencimiento</label>
+              <input type="text" id="cardExp" maxlength="5" placeholder="MM/AA">
+            </div>
+            <div class="field">
+              <label for="cardCvv">CVV</label>
+              <input type="text" id="cardCvv" maxlength="3" placeholder="123">
+            </div>
           </div>
         </div>
-        <p class="hint">Este es un pago simulado con fines académicos. No se procesan tarjetas reales.</p>
+
+        <div id="edenredFields" style="display:none;">
+          <div class="field">
+            <label for="edenredName">Nombre del titular</label>
+            <input type="text" id="edenredName" placeholder="Como aparece en tu credencial">
+          </div>
+          <div class="field">
+            <label for="edenredNumber">Número de tarjeta Edenred</label>
+            <input type="text" id="edenredNumber" maxlength="16" placeholder="0000 0000 0000">
+          </div>
+          <div class="field">
+            <label for="edenredPin">PIN</label>
+            <input type="password" id="edenredPin" maxlength="4" placeholder="••••">
+          </div>
+          <p class="hint">El monto se descontará de tu saldo de beneficios de alimentación Edenred.</p>
+        </div>
+
+        <p class="hint">Este es un pago simulado con fines académicos. No se procesan pagos reales.</p>
         <div class="modal-nav">
           <button class="btn-back" id="backStep1">Volver</button>
           <button class="btn-next pay" id="toStep3">Pagar</button>
@@ -564,6 +627,7 @@
             <div class="t-row t-total"><span>TOTAL</span><span id="ticketTotal">$0</span></div>
             <div class="t-row"><span>RETIRO</span><span id="ticketWhen"></span></div>
             <div class="t-row"><span>NOMBRE</span><span id="ticketName"></span></div>
+            <div class="t-row"><span>MEDIO DE PAGO</span><span id="ticketPayMethod"></span></div>
             <hr>
             <a id="qrLink" href="gracias-compra.png" target="_blank" rel="noopener" title="Ver imagen de agradecimiento">
               <div class="qr-wrap" id="qrcode"></div>
@@ -800,15 +864,43 @@ document.getElementById('toStep2').addEventListener('click', ()=>{
 
 document.getElementById('backStep1').addEventListener('click', ()=> setStep(0));
 
+document.querySelectorAll('input[name="payMethod"]').forEach(radio=>{
+  radio.addEventListener('change', ()=>{
+    document.querySelectorAll('.pay-method').forEach(el=>el.classList.remove('active'));
+    radio.closest('.pay-method').classList.add('active');
+    const isEdenred = radio.value === 'edenred';
+    document.getElementById('cardFields').style.display = isEdenred ? 'none' : 'block';
+    document.getElementById('edenredFields').style.display = isEdenred ? 'block' : 'none';
+  });
+});
+
+function selectedPayMethod(){
+  const checked = document.querySelector('input[name="payMethod"]:checked');
+  return checked ? checked.value : 'credito';
+}
+
 document.getElementById('toStep3').addEventListener('click', ()=>{
-  const cardName = document.getElementById('cardName').value.trim();
-  const cardNumber = document.getElementById('cardNumber').value.trim();
-  const cardExp = document.getElementById('cardExp').value.trim();
-  const cardCvv = document.getElementById('cardCvv').value.trim();
-  if(!cardName || cardNumber.length < 12 || !cardExp || cardCvv.length < 3){
-    alert('Completa los datos de la tarjeta simulada para continuar.');
-    return;
+  const method = selectedPayMethod();
+
+  if(method === 'edenred'){
+    const edenredName = document.getElementById('edenredName').value.trim();
+    const edenredNumber = document.getElementById('edenredNumber').value.trim();
+    const edenredPin = document.getElementById('edenredPin').value.trim();
+    if(!edenredName || edenredNumber.replace(/\s/g,'').length < 10 || edenredPin.length < 4){
+      alert('Completa los datos de tu tarjeta Edenred para continuar.');
+      return;
+    }
+  } else {
+    const cardName = document.getElementById('cardName').value.trim();
+    const cardNumber = document.getElementById('cardNumber').value.trim();
+    const cardExp = document.getElementById('cardExp').value.trim();
+    const cardCvv = document.getElementById('cardCvv').value.trim();
+    if(!cardName || cardNumber.replace(/\s/g,'').length < 12 || !cardExp || cardCvv.length < 3){
+      alert('Completa los datos de la tarjeta simulada para continuar.');
+      return;
+    }
   }
+
   setStep(2);
   document.getElementById('processingView').style.display = 'flex';
   document.getElementById('confirmView').style.display = 'none';
@@ -816,7 +908,7 @@ document.getElementById('toStep3').addEventListener('click', ()=>{
   setTimeout(()=>{
     document.getElementById('processingView').style.display = 'none';
     document.getElementById('confirmView').style.display = 'block';
-    buildTicket();
+    buildTicket(method);
   }, 1600);
 });
 
@@ -826,7 +918,7 @@ function randomOrderCode(){
   return 'INA-' + n;
 }
 
-function buildTicket(){
+function buildTicket(method){
   const items = cartArray();
   const total = cartTotal();
   const date = document.getElementById('deliveryDate').value;
@@ -834,12 +926,19 @@ function buildTicket(){
   const name = document.getElementById('pickupName').value.trim();
   const code = randomOrderCode();
 
+  const methodLabels = {
+    credito: 'Tarjeta de Crédito',
+    debito: 'Tarjeta de Débito',
+    edenred: 'Pago Digital Edenred'
+  };
+
   document.getElementById('ticketItems').innerHTML = items.map(c => `
     <div class="t-row"><span>${c.qty}x ${c.item.name}</span><span>${money(c.item.price * c.qty)}</span></div>
   `).join('');
   document.getElementById('ticketTotal').textContent = money(total);
   document.getElementById('ticketWhen').textContent = `${date} · ${time} hrs`;
   document.getElementById('ticketName').textContent = name;
+  document.getElementById('ticketPayMethod').textContent = methodLabels[method] || 'Tarjeta de Crédito';
   document.getElementById('orderCode').textContent = code;
 
   // El QR dirige a la imagen de agradecimiento publicada en GitHub Pages.
@@ -874,6 +973,14 @@ document.getElementById('newOrder').addEventListener('click', ()=>{
   document.getElementById('cardNumber').value = '';
   document.getElementById('cardExp').value = '';
   document.getElementById('cardCvv').value = '';
+  document.getElementById('edenredName').value = '';
+  document.getElementById('edenredNumber').value = '';
+  document.getElementById('edenredPin').value = '';
+  document.querySelectorAll('input[name="payMethod"]').forEach(r=> r.checked = (r.value === 'credito'));
+  document.querySelectorAll('.pay-method').forEach(el=>el.classList.remove('active'));
+  document.querySelector('.pay-method[data-method="credito"]').classList.add('active');
+  document.getElementById('cardFields').style.display = 'block';
+  document.getElementById('edenredFields').style.display = 'none';
 });
 
 /* ---------- Init ---------- */
