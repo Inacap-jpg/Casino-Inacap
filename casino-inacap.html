@@ -842,18 +842,14 @@ function buildTicket(){
   document.getElementById('ticketName').textContent = name;
   document.getElementById('orderCode').textContent = code;
 
-  // El QR dirige a la imagen de agradecimiento "gracias-compra.png", que se
-  // entrega junto a este HTML en la misma carpeta. Un código QR no puede
-  // contener una imagen completa dentro de sí mismo (su capacidad máxima es
-  // de unos pocos miles de caracteres), así que en su lugar codifica la
-  // ruta/URL hacia el archivo de imagen:
-  //  - Si abres este archivo tal cual (haciendo doble clic), al tocar el QR
-  //    en el mismo computador se abrirá la imagen correctamente.
-  //  - Para que también se pueda ESCANEAR con la cámara de un celular, sube
-  //    "casino-inacap.html" y "gracias-compra.png" juntos a un hosting/servidor
-  //    y reemplaza GRACIAS_IMG_URL más abajo por la URL pública completa,
-  //    por ejemplo: "https://tu-sitio.com/gracias-compra.png"
-  const GRACIAS_IMG_URL = "gracias-compra.png";
+  // El QR dirige a la imagen de agradecimiento publicada en GitHub Pages.
+  // Un código QR no puede contener una imagen completa dentro de sí mismo
+  // (su capacidad máxima es de unos pocos miles de caracteres), así que en
+  // su lugar codifica la URL pública del archivo de imagen. Mientras
+  // "casino-inacap.html" y "gracias-compra.png" sigan publicados juntos en
+  // https://inacap-jpg.github.io/Casino-Inacap/, el QR se puede escanear con
+  // la cámara de cualquier celular y abrirá esta imagen.
+  const GRACIAS_IMG_URL = "https://inacap-jpg.github.io/Casino-Inacap/gracias-compra.png";
 
   document.getElementById('qrLink').href = GRACIAS_IMG_URL;
 
