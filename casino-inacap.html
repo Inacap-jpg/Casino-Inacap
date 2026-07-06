@@ -179,6 +179,14 @@
     flex-shrink:0;
   }
   .card h3{font-family:'Work Sans'; font-weight:800; text-transform:none; font-size:16.5px; letter-spacing:0;}
+  .stock-badge{
+    font-family:'IBM Plex Mono'; font-size:10.5px; font-weight:700;
+    padding:4px 9px; border-radius:999px; white-space:nowrap; flex-shrink:0;
+  }
+  .stock-badge.stock-ok{background:#E4F3EA; color:var(--green);}
+  .stock-badge.stock-low{background:#FFF1D6; color:#B8710A;}
+  .stock-badge.stock-out{background:#FBE3E3; color:var(--red);}
+  .add-btn:disabled{background:#c7c7ca; cursor:not-allowed;}
   .card .desc{font-size:13.5px; color:#5c5c63; line-height:1.4; min-height:36px;}
   .card .tags{display:flex; gap:6px; flex-wrap:wrap;}
   .card .tags span{
@@ -593,12 +601,13 @@
             <input type="text" id="edenredName" placeholder="Como aparece en tu credencial">
           </div>
           <div class="field">
-            <label for="edenredNumber">Número de tarjeta Edenred</label>
-            <input type="text" id="edenredNumber" maxlength="16" placeholder="0000 0000 0000">
+            <label for="edenredRut">RUT</label>
+            <input type="text" id="edenredRut" maxlength="12" placeholder="12.345.678-9">
           </div>
           <div class="field">
-            <label for="edenredPin">PIN</label>
-            <input type="password" id="edenredPin" maxlength="4" placeholder="••••">
+            <label for="edenredCode">Número dinámico (4 dígitos)</label>
+            <input type="password" id="edenredCode" maxlength="4" inputmode="numeric" placeholder="••••">
+            <p class="hint">Es el código de 4 dígitos que genera tu app Edenred, distinto cada vez que pagas.</p>
           </div>
           <p class="hint">El monto se descontará de tu saldo de beneficios de alimentación Edenred.</p>
         </div>
@@ -649,35 +658,35 @@
 /* ---------- Data ---------- */
 const MENU = {
   dia: [
-    {id:'d1', icon:'🍗', name:'Menú Alternativa 1 — Pollo al jugo', desc:'Pollo al jugo, puré picante, ensalada surtida, postre y bebida.', tags:['Incluye bebida','Incluye postre'], price:3500},
-    {id:'d2', icon:'🍝', name:'Menú Alternativa 2 — Lasaña de verduras', desc:'Lasaña de verduras gratinada, ensalada verde, postre y bebida.', tags:['Vegetariano','Incluye bebida'], price:3200},
-    {id:'d3', icon:'🥗', name:'Menú Alternativa 3 — Wok de tofu', desc:'Wok de tofu y vegetales salteados con arroz, postre y bebida.', tags:['Vegano','Incluye bebida'], price:3200},
-    {id:'d4', icon:'🐟', name:'Menú Ejecutivo — Filete de pescado', desc:'Filete de pescado a la plancha, arroz pilaf, ensalada, postre y bebida.', tags:['Alto en proteína'], price:4200},
-    {id:'d5', icon:'🥩', name:'Menú Alternativa 4 — Carne mechada', desc:'Carne mechada con arroz graneado, ensalada, postre y bebida.', tags:['Incluye bebida','Incluye postre'], price:3600},
-    {id:'d6', icon:'🍲', name:'Menú Alternativa 5 — Cazuela de vacuno', desc:'Cazuela tradicional de vacuno con verduras de estación, postre y bebida.', tags:['Casero','Incluye bebida'], price:3400},
+    {id:'d1', icon:'🍗', name:'Menú Alternativa 1 — Pollo al jugo', desc:'Pollo al jugo, puré picante, ensalada surtida, postre y bebida.', tags:['Incluye bebida','Incluye postre'], price:3500, stock:14},
+    {id:'d2', icon:'🍝', name:'Menú Alternativa 2 — Lasaña de verduras', desc:'Lasaña de verduras gratinada, ensalada verde, postre y bebida.', tags:['Vegetariano','Incluye bebida'], price:3200, stock:9},
+    {id:'d3', icon:'🥗', name:'Menú Alternativa 3 — Wok de tofu', desc:'Wok de tofu y vegetales salteados con arroz, postre y bebida.', tags:['Vegano','Incluye bebida'], price:3200, stock:6},
+    {id:'d4', icon:'🐟', name:'Menú Ejecutivo — Filete de pescado', desc:'Filete de pescado a la plancha, arroz pilaf, ensalada, postre y bebida.', tags:['Alto en proteína'], price:4200, stock:11},
+    {id:'d5', icon:'🥩', name:'Menú Alternativa 4 — Carne mechada', desc:'Carne mechada con arroz graneado, ensalada, postre y bebida.', tags:['Incluye bebida','Incluye postre'], price:3600, stock:8},
+    {id:'d6', icon:'🍲', name:'Menú Alternativa 5 — Cazuela de vacuno', desc:'Cazuela tradicional de vacuno con verduras de estación, postre y bebida.', tags:['Casero','Incluye bebida'], price:3400, stock:5},
   ],
   estudiante: [
-    {id:'e1', icon:'🎓', name:'Menú Estudiante Sencillo', desc:'Plato único del día a elección + bebida. Precio preferencial con credencial INACAP.', tags:['Precio estudiante','Incluye bebida'], price:2200},
-    {id:'e2', icon:'🥦', name:'Menú Estudiante Vegetariano', desc:'Opción vegetariana del día + ensalada + bebida, a precio preferencial.', tags:['Precio estudiante','Vegetariano'], price:2200},
-    {id:'e3', icon:'💪', name:'Menú Estudiante Proteico', desc:'Plato único con mayor porción de proteína + bebida, ideal antes de clases largas.', tags:['Precio estudiante','Alto en proteína'], price:2500},
-    {id:'e4', icon:'🥪', name:'Menú Estudiante Express', desc:'Sándwich del día + bebida, pensado para pausas cortas entre clases.', tags:['Precio estudiante','Rápido'], price:1900},
-    {id:'e5', icon:'📚', name:'Combo Estudiante Ahorro', desc:'Plato único + postre + bebida, la opción más económica del casino.', tags:['Precio estudiante','Incluye postre'], price:2400},
+    {id:'e1', icon:'🎓', name:'Menú Estudiante Sencillo', desc:'Plato único del día a elección + bebida. Precio preferencial con credencial INACAP.', tags:['Precio estudiante','Incluye bebida'], price:2200, stock:20},
+    {id:'e2', icon:'🥦', name:'Menú Estudiante Vegetariano', desc:'Opción vegetariana del día + ensalada + bebida, a precio preferencial.', tags:['Precio estudiante','Vegetariano'], price:2200, stock:12},
+    {id:'e3', icon:'💪', name:'Menú Estudiante Proteico', desc:'Plato único con mayor porción de proteína + bebida, ideal antes de clases largas.', tags:['Precio estudiante','Alto en proteína'], price:2500, stock:10},
+    {id:'e4', icon:'🥪', name:'Menú Estudiante Express', desc:'Sándwich del día + bebida, pensado para pausas cortas entre clases.', tags:['Precio estudiante','Rápido'], price:1900, stock:15},
+    {id:'e5', icon:'📚', name:'Combo Estudiante Ahorro', desc:'Plato único + postre + bebida, la opción más económica del casino.', tags:['Precio estudiante','Incluye postre'], price:2400, stock:7},
   ],
   carta: [
-    {id:'c1', icon:'🥪', name:'Sándwich Barros Luco', desc:'Pan de molde, carne mechada y queso derretido.', tags:['A la carta'], price:2800},
-    {id:'c2', icon:'🥟', name:'Empanada de pino', desc:'Empanada horneada, receta tradicional.', tags:['A la carta'], price:1800},
-    {id:'c3', icon:'🥗', name:'Ensalada César', desc:'Lechuga, pollo grillado, crotones y aderezo césar.', tags:['A la carta'], price:2900},
-    {id:'c4', icon:'🍟', name:'Papas fritas (porción)', desc:'Porción individual de papas fritas.', tags:['Acompañamiento'], price:1500},
-    {id:'c5', icon:'🌭', name:'Completo italiano', desc:'Vienesa, palta, tomate y mayonesa en pan especial.', tags:['A la carta'], price:2400},
-    {id:'c6', icon:'🍕', name:'Porción de pizza', desc:'Porción individual de pizza del día.', tags:['A la carta'], price:2300},
+    {id:'c1', icon:'🥪', name:'Sándwich Barros Luco', desc:'Pan de molde, carne mechada y queso derretido.', tags:['A la carta'], price:2800, stock:13},
+    {id:'c2', icon:'🥟', name:'Empanada de pino', desc:'Empanada horneada, receta tradicional.', tags:['A la carta'], price:1800, stock:18},
+    {id:'c3', icon:'🥗', name:'Ensalada César', desc:'Lechuga, pollo grillado, crotones y aderezo césar.', tags:['A la carta'], price:2900, stock:8},
+    {id:'c4', icon:'🍟', name:'Papas fritas (porción)', desc:'Porción individual de papas fritas.', tags:['Acompañamiento'], price:1500, stock:25},
+    {id:'c5', icon:'🌭', name:'Completo italiano', desc:'Vienesa, palta, tomate y mayonesa en pan especial.', tags:['A la carta'], price:2400, stock:10},
+    {id:'c6', icon:'🍕', name:'Porción de pizza', desc:'Porción individual de pizza del día.', tags:['A la carta'], price:2300, stock:4},
   ],
   bebidas: [
-    {id:'b1', icon:'🥤', name:'Bebida lata 350ml', desc:'A elección: bebida cola, naranja o lima.', tags:['Frío'], price:1000},
-    {id:'b2', icon:'🧃', name:'Jugo natural', desc:'Jugo natural de fruta de estación, sin azúcar añadida.', tags:['Natural'], price:1200},
-    {id:'b3', icon:'🍮', name:'Postre de la casa', desc:'Mousse o flan de la casa, a elección según disponibilidad.', tags:['Dulce'], price:1300},
-    {id:'b4', icon:'☕', name:'Café', desc:'Café americano recién preparado.', tags:['Caliente'], price:900},
-    {id:'b5', icon:'🍵', name:'Té o infusión', desc:'Selección de té negro, verde o hierbas.', tags:['Caliente'], price:800},
-    {id:'b6', icon:'🍰', name:'Torta individual', desc:'Porción de torta del día, ideal para acompañar el café.', tags:['Dulce'], price:1600},
+    {id:'b1', icon:'🥤', name:'Bebida lata 350ml', desc:'A elección: bebida cola, naranja o lima.', tags:['Frío'], price:1000, stock:40},
+    {id:'b2', icon:'🧃', name:'Jugo natural', desc:'Jugo natural de fruta de estación, sin azúcar añadida.', tags:['Natural'], price:1200, stock:22},
+    {id:'b3', icon:'🍮', name:'Postre de la casa', desc:'Mousse o flan de la casa, a elección según disponibilidad.', tags:['Dulce'], price:1300, stock:16},
+    {id:'b4', icon:'☕', name:'Café', desc:'Café americano recién preparado.', tags:['Caliente'], price:900, stock:30},
+    {id:'b5', icon:'🍵', name:'Té o infusión', desc:'Selección de té negro, verde o hierbas.', tags:['Caliente'], price:800, stock:20},
+    {id:'b6', icon:'🍰', name:'Torta individual', desc:'Porción de torta del día, ideal para acompañar el café.', tags:['Dulce'], price:1600, stock:3},
   ]
 };
 
@@ -690,27 +699,35 @@ function renderMenu(){
   const panels = {dia:'panel-dia', estudiante:'panel-estudiante', carta:'panel-carta', bebidas:'panel-bebidas'};
   Object.entries(panels).forEach(([key, panelId])=>{
     const panel = document.getElementById(panelId);
-    panel.innerHTML = MENU[key].map(item => `
+    panel.innerHTML = MENU[key].map(item => {
+      const inCart = cart[item.id] ? cart[item.id].qty : 0;
+      const remaining = item.stock - inCart;
+      const stockClass = remaining <= 0 ? 'stock-out' : (remaining <= 5 ? 'stock-low' : 'stock-ok');
+      const stockLabel = remaining <= 0 ? 'Agotado' : `Quedan ${remaining} unid.`;
+      return `
       <div class="card">
         <div class="top-row">
           <div class="icon">${item.icon}</div>
+          <span class="stock-badge ${stockClass}">${stockLabel}</span>
         </div>
         <h3>${item.name}</h3>
         <p class="desc">${item.desc}</p>
         <div class="tags">${item.tags.map(t=>`<span>${t}</span>`).join('')}</div>
         <div class="bottom-row">
           <span class="price">${money(item.price)}</span>
-          <button class="add-btn" data-id="${item.id}">Agregar</button>
+          <button class="add-btn" data-id="${item.id}" ${remaining <= 0 ? 'disabled' : ''}>${remaining <= 0 ? 'Sin stock' : 'Agregar'}</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   });
 
   document.querySelectorAll('.add-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
+      if(btn.disabled) return;
       addToCart(btn.dataset.id);
       btn.textContent = 'Agregado ✓';
-      setTimeout(()=>{ btn.textContent = 'Agregar'; }, 900);
+      setTimeout(()=>{ if(!btn.disabled) btn.textContent = 'Agregar'; }, 700);
     });
   });
 }
@@ -724,16 +741,21 @@ function findItem(id){
 
 function addToCart(id){
   const item = findItem(id);
+  const current = cart[id] ? cart[id].qty : 0;
+  if(current >= item.stock) return;
   if(!cart[id]) cart[id] = {item, qty:0};
   cart[id].qty += 1;
   renderCart();
+  renderMenu();
 }
 
 function changeQty(id, delta){
   if(!cart[id]) return;
+  if(delta > 0 && cart[id].qty >= cart[id].item.stock) return;
   cart[id].qty += delta;
   if(cart[id].qty <= 0) delete cart[id];
   renderCart();
+  renderMenu();
 }
 
 function cartArray(){ return Object.values(cart); }
@@ -884,10 +906,10 @@ document.getElementById('toStep3').addEventListener('click', ()=>{
 
   if(method === 'edenred'){
     const edenredName = document.getElementById('edenredName').value.trim();
-    const edenredNumber = document.getElementById('edenredNumber').value.trim();
-    const edenredPin = document.getElementById('edenredPin').value.trim();
-    if(!edenredName || edenredNumber.replace(/\s/g,'').length < 10 || edenredPin.length < 4){
-      alert('Completa los datos de tu tarjeta Edenred para continuar.');
+    const edenredRut = document.getElementById('edenredRut').value.trim();
+    const edenredCode = document.getElementById('edenredCode').value.trim();
+    if(!edenredName || edenredRut.replace(/[.\-\s]/g,'').length < 7 || edenredCode.length !== 4){
+      alert('Ingresa tu RUT y el número dinámico de 4 dígitos de tu app Edenred para continuar.');
       return;
     }
   } else {
@@ -925,6 +947,9 @@ function buildTicket(method){
   const time = document.getElementById('deliveryTime').value;
   const name = document.getElementById('pickupName').value.trim();
   const code = randomOrderCode();
+
+  // Descuenta el stock de forma permanente ya que el pago fue confirmado.
+  items.forEach(c => { c.item.stock = Math.max(0, c.item.stock - c.qty); });
 
   const methodLabels = {
     credito: 'Tarjeta de Crédito',
@@ -967,6 +992,7 @@ function buildTicket(method){
 document.getElementById('newOrder').addEventListener('click', ()=>{
   cart = {};
   renderCart();
+  renderMenu();
   checkoutOverlay.classList.remove('show');
   document.getElementById('pickupName').value = '';
   document.getElementById('cardName').value = '';
@@ -974,8 +1000,8 @@ document.getElementById('newOrder').addEventListener('click', ()=>{
   document.getElementById('cardExp').value = '';
   document.getElementById('cardCvv').value = '';
   document.getElementById('edenredName').value = '';
-  document.getElementById('edenredNumber').value = '';
-  document.getElementById('edenredPin').value = '';
+  document.getElementById('edenredRut').value = '';
+  document.getElementById('edenredCode').value = '';
   document.querySelectorAll('input[name="payMethod"]').forEach(r=> r.checked = (r.value === 'credito'));
   document.querySelectorAll('.pay-method').forEach(el=>el.classList.remove('active'));
   document.querySelector('.pay-method[data-method="credito"]').classList.add('active');
